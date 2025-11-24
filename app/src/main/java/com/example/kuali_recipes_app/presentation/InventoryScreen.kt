@@ -11,6 +11,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -29,12 +31,21 @@ import java.time.temporal.ChronoUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InventoryScreen() {
+fun InventoryScreen(
+    viewModel: InventoryViewModel,
+    showDialog: Boolean,
+    onDismissDialog: () -> Unit
+) {
     var searchQuery by remember { mutableStateOf("") }
+    // Estado para controlar la visibilidad del diálogo
+    var showAddDialog by remember { mutableStateOf(false) }
 
     val darkPurple = Color(0xFF2D2A47)
-    val cardBackground = Color(0xFF3D3A57)
     val greenIcon = Color(0xFF4CAF50)
+
+    // Colores para el diálogo
+    val dialogContainerColor = Color(0xFF252836) // Un gris oscuro azulado
+
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
             Color(0xFF0F1817),
@@ -43,46 +54,8 @@ fun InventoryScreen() {
         )
     )
 
-    val inventoryItems = remember {
-        listOf(
-            InventoryItem(
-                name = "Huevos",
-                quantity = "12 unidades",
-                expiryDate = LocalDate.now().plusDays(3),
-                icon = Icons.Default.Check,
-                iconColor = greenIcon
-            ),
-            InventoryItem(
-                name = "Pechuga de Pollo",
-                quantity = "500 gr",
-                expiryDate = LocalDate.now(),
-                icon = Icons.Default.Check,
-                iconColor = greenIcon
-            ),
-            InventoryItem(
-                name = "Leche de Almendras",
-                quantity = "1 Litro",
-                expiryDate = LocalDate.of(2024, 12, 25),
-                icon = Icons.Default.Check,
-                iconColor = greenIcon
-            ),
-            InventoryItem(
-                name = "Tomates",
-                quantity = "6 unidades",
-                expiryDate = LocalDate.now().minusDays(1),
-                icon = Icons.Default.Check,
-                iconColor = greenIcon
-            ),
-            InventoryItem(
-                name = "Jugo de Naranja",
-                quantity = "750 ml",
-                expiryDate = LocalDate.now().plusDays(15),
-                icon = Icons.Default.Check,
-                iconColor = greenIcon
-            )
-        )
-    }
-
+    // 1. CAMBIO IMPORTANTE: Usar mutableStateListOf para poder agregar items dinámicamente
+    val inventoryItems = viewModel.inventoryItems
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -99,19 +72,20 @@ fun InventoryScreen() {
                             color = Color.White
                         )
                     },
-                    actions = {
-                        IconButton(onClick = { /* Ordenar */ }) {
-                            Icon(
-                                Icons.Default.Check,
-                                contentDescription = "Ordenar",
-                                tint = Color.White
-                            )
-                        }
-                    },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                         containerColor = Color.Transparent
                     )
                 )
+            },
+
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = { showAddDialog = true },
+                    containerColor = Color(0xFF4FFFCD), // Tu color verde menta
+                    contentColor = Color.Black
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Agregar item")
+                }
             },
             containerColor = Color.Transparent
         ) { paddingValues ->
@@ -121,33 +95,20 @@ fun InventoryScreen() {
                     .padding(paddingValues)
                     .padding(horizontal = 16.dp)
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
 
-                // Barra de búsqueda
+                Spacer(modifier = Modifier.height(16.dp))
                 TextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = {
-                        Text(
-                            "Buscar en inventario...",
-                            color = Color.Gray
-                        )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            Icons.Default.Search,
-                            contentDescription = "Buscar",
-                            tint = Color.Gray
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                    placeholder = { Text("Buscar...", color = Color.Gray) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                    modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.White.copy(alpha = 0.08f),
                         unfocusedContainerColor = Color.Transparent,
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
-                        cursorColor = Color.White,
+                        cursorColor = Color.White, // Corrección visual
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     ),
@@ -156,22 +117,32 @@ fun InventoryScreen() {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Lista de items
+
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(inventoryItems) { item ->
                         InventoryItemCard(item)
                     }
-
-                    item {
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
+                    item { Spacer(modifier = Modifier.height(80.dp)) } // Espacio para que el FAB no tape el último item
                 }
             }
         }
+
+
+        if (showDialog) {
+            AddInventoryItemDialog(
+                onDismiss = onDismissDialog,
+                onConfirm = { name, quantity, days ->
+                    viewModel.addItem(name, quantity, days) // Llamamos al ViewModel
+                    onDismissDialog()
+                },
+                containerColor = Color(0xFF252836)
+            )
+        }
     }
 }
+
 
 @Composable
 fun InventoryItemCard(item: InventoryItem) {
@@ -264,8 +235,87 @@ fun InventoryItemCard(item: InventoryItem) {
     }
 }
 
-@Preview
 @Composable
-private fun InvetoryScreenPreview() {
-    InventoryScreen()
+fun AddInventoryItemDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String, String, String) -> Unit,    containerColor: Color
+) {
+    var name by remember { mutableStateOf("") }
+    var quantity by remember { mutableStateOf("") }
+    var daysToExpiry by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = containerColor,
+        title = {
+            Text("Nuevo Producto", color = Color.White, fontWeight = FontWeight.Bold)
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Campo Nombre
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Nombre del producto", color = Color.Gray) },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Color(0xFF4FFFCD),
+                        unfocusedBorderColor = Color.Gray
+                    )
+                )
+
+                // Campo Cantidad
+                OutlinedTextField(
+                    value = quantity,
+                    onValueChange = { quantity = it },
+                    label = { Text("Cantidad (ej. 2 litros)", color = Color.Gray) },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Color(0xFF4FFFCD),
+                        unfocusedBorderColor = Color.Gray
+                    )
+                )
+
+                // Campo Días para vencer
+                OutlinedTextField(
+                    value = daysToExpiry,
+                    onValueChange = { if (it.all { char -> char.isDigit() }) daysToExpiry = it },
+                    label = { Text("Días para vencer", color = Color.Gray) },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Color(0xFF4FFFCD),
+                        unfocusedBorderColor = Color.Gray
+                    )
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (name.isNotEmpty() && quantity.isNotEmpty()) {
+                        onConfirm(name, quantity, daysToExpiry)
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF4FFFCD),
+                    contentColor = Color.Black
+                )
+            ) {
+                Text("Agregar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar", color = Color.White.copy(alpha = 0.7f))
+            }
+        }
+    )
 }
+
+
