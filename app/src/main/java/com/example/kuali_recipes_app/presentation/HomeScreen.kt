@@ -31,6 +31,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.kuali_recipes_app.models.ExpiringItem
+import com.example.kuali_recipes_app.models.IngredientCard
+import com.example.kuali_recipes_app.models.RecipeCard
 
 
 @Composable
@@ -102,11 +105,6 @@ fun HeaderSection() {
     )
 }
 
-data class IngredientCard(
-    val name: String,
-    val subtitle: String,
-    val imageRes: Int? = null
-)
 
 @Composable
 fun RecentlyAddedSection() {
@@ -122,7 +120,12 @@ fun RecentlyAddedSection() {
     val items = listOf(
         IngredientCard("Tomates", "2 unidades"),
         IngredientCard("Aguacate", "1 unidad"),
-        IngredientCard("Pollo", "500g")
+        IngredientCard("Pollo", "500g"),
+        IngredientCard("Pollo", "500g"),
+        IngredientCard("Pollo", "500g"),
+        IngredientCard("Pollo", "500g"),
+        IngredientCard("Pollo", "500g"),
+        IngredientCard("Pollo", "500g"),
     )
 
     LazyRow(
@@ -176,11 +179,7 @@ fun RecentlyAddedSection() {
     }
 }
 
-data class RecipeCard(
-    val title: String,
-    val time: String,
-    val imageRes: Int? = null
-)
+
 
 @Composable
 fun LastCreationsSection() {
@@ -246,12 +245,7 @@ fun LastCreationsSection() {
     }
 }
 
-data class ExpiringItem(
-    val name: String,
-    val detail: String,
-    val quantity: String,
-    val color: Color
-)
+
 
 @Composable
 fun ExpiringSoonSection() {

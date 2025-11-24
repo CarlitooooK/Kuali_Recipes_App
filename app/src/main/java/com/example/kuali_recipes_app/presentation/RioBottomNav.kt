@@ -74,6 +74,6 @@ fun ScreenContent(selectedIndex: Int, modifier: Modifier) {
         0 -> HomeScreen()
         1 -> RecipesScreen()
         2 -> InventoryScreen()
-        3 -> HomeScreen()
+        3 -> ProfileScreen()
     }
 }

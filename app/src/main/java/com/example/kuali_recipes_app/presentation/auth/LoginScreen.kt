@@ -1,4 +1,4 @@
-package com.example.kuali_recipes_app.presentation
+package com.example.kuali_recipes_app.presentation.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -39,9 +39,11 @@ fun LoginScreen(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFF0F1817),
-                        Color(0xFF1A1614),
-                        Color(0xFF132223),
+                        Color(0xFF121215),
+                        Color(0xFF151524),
+                        Color(0xFF111315),
+                        Color(0xFF231719),
+                        Color(0xFF1A1415),
                     )
                 )
             )
@@ -74,23 +76,25 @@ fun LoginScreen(
 
             // Título de la app
             Text(
-                text = "Kuali",
-                style = MaterialTheme.typography.titleMedium,
-                color = Color(0xFF4FFFCD),
-                fontWeight = FontWeight.Medium,
-                fontFamily = Luxora,
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Bienvenido de nuevo
-            Text(
-                text = "Bienvenido de\nnuevo",
+                text = "Bienvenido a Kuali",
                 style = MaterialTheme.typography.headlineLarge,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 lineHeight = 40.sp,
+
+                )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Bienvenido de nuevo
+            Text(
+                text = "Inicie sesión para continuar",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White,
+                fontWeight = FontWeight.Light,
+                textAlign = TextAlign.Center,
+                lineHeight = 30.sp,
 
             )
 

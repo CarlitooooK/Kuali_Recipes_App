@@ -1,4 +1,4 @@
-package com.example.kuali_recipes_app.presentation
+package com.example.kuali_recipes_app.presentation.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -49,9 +49,11 @@ fun RegisterScreen(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFF0F1817),
-                        Color(0xFF1A1614),
-                        Color(0xFF132223),
+                        Color(0xFF121215),
+                        Color(0xFF151524),
+                        Color(0xFF111315),
+                        Color(0xFF231719),
+                        Color(0xFF1A1415),
                     )
                 )
             )
@@ -86,7 +88,7 @@ fun RegisterScreen(
 
             // Título de la app
             Text(
-                text = "Recetas IA",
+                text = "Kuali",
                 style = MaterialTheme.typography.titleMedium,
                 color = Color(0xFF4FFFCD),
                 fontWeight = FontWeight.Medium
